@@ -1,0 +1,17 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Logs
+*.log
+logs.txt
+wireshark.txt
+
+# Arquivos de configuração específicos de IDE (opcional)
+.vscode/
+.idea/
+
+# Arquivos de backup ou temporários
+*~
+*.swp
