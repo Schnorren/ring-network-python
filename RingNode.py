@@ -183,11 +183,11 @@ class RingNode:
                 error_status=status
             )
 
-            if random.random() < 0.3:
-                data_packet_dict = ErrorInserter.insert_error(data_packet_dict)
-
             crc = CRC32.calculate(data_packet_dict)
             data_packet_dict = Packet.set_crc(data_packet_dict, crc)
+
+            if random.random() < 0.3:
+                data_packet_dict = ErrorInserter.insert_error(data_packet_dict)
 
             encoded_payload = Packet.encode(data_packet_dict).encode('utf-8')
             self.socket.sendto(encoded_payload, self.right_neighbor)
