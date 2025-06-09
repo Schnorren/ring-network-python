@@ -5,8 +5,6 @@ __pycache__/
 
 # Logs
 *.log
-logs.txt
-wireshark.txt
 
 # Arquivos de configuração específicos de IDE (opcional)
 .vscode/

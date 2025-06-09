@@ -1,0 +1,8 @@
+sudo wireshark
+
+any
+
+utilizar o filtro
+udp && (udp.port == 6000 || udp.port == 6001 || udp.port == 6002)
+
+

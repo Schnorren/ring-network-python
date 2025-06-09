@@ -1,0 +1,7 @@
+Eh possivel consultar os logs no terminal usando: 
+
+tail -f Alice.log    
+tail -f Bob.log   
+tail -f Charlie.log   
+
+Ouuuuuuu abrir os logs por aqui
