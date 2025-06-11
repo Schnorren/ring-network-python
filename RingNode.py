@@ -428,7 +428,71 @@ class RingNode:
                 if ready:
                     # Lê a linha digitada pelo usuário e remove espaços em branco adicionais
                     line = sys.stdin.readline().strip()
-                    
+                    # Comando: /forcartoken
+                    if line == "/forcartoken":
+                        if not self.token_holder:
+                            self.token_holder = True
+                            logging.info(f"[{self.nickname}] Comando manual: forçando token.")
+                            self.send_token()
+                        continue
+
+                    # Comando: /removertoken
+                    if line == "/removertoken":
+                        self.token_holder = False
+                        logging.info(f"[{self.nickname}] Comando manual: removendo token (não será passado).")
+                        continue
+
+                    # Comando: /limparfila
+                    if line == "/limparfila":
+                        while not self.message_queue.is_empty():
+                            self.message_queue.dequeue()
+                        print(f"[{self.nickname}] Fila de mensagens limpa.")
+                        logging.info(f"[{self.nickname}] Comando manual: limpando fila de mensagens.")
+                        continue
+
+                    if line == "/debug":
+                        tempo_desde_token = time.time() - self.last_token_time if self.last_token_time else "nunca"
+                        print(f"[{self.nickname}] STATUS DEBUG")
+                        print(f"  Possui token? {'Sim' if self.token_holder else 'Não'}")
+                        print(f"  Aguardando ACK/NAK? {'Sim' if self.waiting_for_answer else 'Não'}")
+                        print(f"  Último token visto há: {tempo_desde_token} segundos")
+                        continue
+
+                    if line == "/duplicartoken":
+                        token = Packet.create_token()
+                        self.socket.sendto(Packet.encode(token).encode('utf-8'), self.right_neighbor)
+                        self.socket.sendto(Packet.encode(token).encode('utf-8'), self.right_neighbor)
+                        logging.info(f"[{self.nickname}] Comando: token duplicado enviado.")
+                        continue
+
+                    if line == "/statusanel":
+                        print(f"[{self.nickname}] Status do anel:")
+                        print(f"  Token: {'Sim' if self.token_holder else 'Não'}")
+                        print(f"  Fila vazia: {'Sim' if self.message_queue.is_empty() else 'Não'}")
+                        print(f"  Esperando resposta? {'Sim' if self.waiting_for_answer else 'Não'}")
+                        continue
+
+
+                    if line == "/mostrafila":
+                        with self.message_queue.queue.mutex:
+                            fila = list(self.message_queue.queue.queue)
+                            print(f"[{self.nickname}] Fila atual:")
+                            for i, msg in enumerate(fila):
+                                print(f"  {i+1}. Para {msg['dest']} – \"{msg['content']}\" (tentativas: {msg['attempts']})")
+                        continue
+
+                    if line.startswith("/tempo "):
+                        try:
+                            novo_tempo = float(line.split()[1])
+                            self.token_hold_time = novo_tempo
+                            self.token_timeout = self.token_hold_time * 5
+                            self.min_token_time = self.token_hold_time * 2 + 0.5
+                            print(f"[{self.nickname}] Tempo do token ajustado para {novo_tempo} segundos.")
+                        except ValueError:
+                            print(f"[{self.nickname}] Valor inválido para tempo.")
+                        continue
+
+
                     # Ignora linhas vazias
                     if not line:
                         continue

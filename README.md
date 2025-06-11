@@ -6,22 +6,22 @@ Este projeto simula uma rede local em anel (Token Ring) utilizando comunicação
 
 ## 📌 Índice
 
-- [Simulador de Rede em Anel com Token Passing](#simulador-de-rede-em-anel-com-token-passing)
-  - [📌 Índice](#-índice)
-  - [📖 Descrição do Projeto](#-descrição-do-projeto)
-  - [✅ Pré-requisitos](#-pré-requisitos)
-  - [📁 Estrutura dos Arquivos](#-estrutura-dos-arquivos)
-  - [🛠️ Como Configurar](#️-como-configurar)
-  - [🚀 Como Executar](#-como-executar)
-  - [🖥️ Detalhes Técnicos](#️-detalhes-técnicos)
-    - [Formato dos Pacotes](#formato-dos-pacotes)
-    - [Fluxo de Token e Dados](#fluxo-de-token-e-dados)
-    - [Controle de Erros e Retransmissão](#controle-de-erros-e-retransmissão)
-    - [Broadcast](#broadcast)
-    - [Detecção de Token Perdido e Duplicado](#detecção-de-token-perdido-e-duplicado)
-  - [⌨️ Comandos Disponíveis](#️-comandos-disponíveis)
-  - [📜 Logs e Depuração](#-logs-e-depuração)
-  - [📌 Licença](#-licença)
+- Simulador de Rede em Anel com Token Passing
+  - 📌 Índice
+  - 📖 Descrição do Projeto
+  - ✅ Pré-requisitos
+  - 📁 Estrutura dos Arquivos
+  - 🛠️ Como Configurar
+  - 🚀 Como Executar
+  - 💻 Detalhes Técnicos
+    - Formato dos Pacotes
+    - Fluxo de Token e Dados
+    - Controle de Erros e Retransmissão
+    - Broadcast
+    - Detecção de Token Perdido e Duplicado
+  - ⌨️ Comandos Disponíveis
+  - 📜 Logs e Depuração
+  - 📌 Licença
 
 ---
 
@@ -57,15 +57,15 @@ O simulador implementa um protocolo Token Ring com comunicação UDP em Python. 
     ├── CRC32.py                # Cálculo de CRC32
     ├── ErrorInserter.py        # Inserção aleatória de erros
     ├── MessageQueue.py         # Fila das mensagens (máx. 10)
-    ├── config_alice.txt        # Exemplo de configuração
-    ├── config_bob.txt          # Exemplo de configuração
-    └── config_charlie.txt      # Exemplo de configuração
+    ├── config_alice.txt        # Configuração da Alice
+    ├── config_bob.txt          # Configuração do Bob
+    └── config_charlie.txt      # Configuração do Charlie
 
 ---
 
 ## 🛠️ Como Configurar
 
-Cada nó utiliza um arquivo texto com exatamente 4 linhas, seguindo o formato abaixo:
+Cada nó utiliza um arquivo texto com exatamente 4 linhas:
 
     ip_do_vizinho:porta_vizinho
     apelido_da_maquina
@@ -79,95 +79,104 @@ Cada nó utiliza um arquivo texto com exatamente 4 linhas, seguindo o formato ab
     2
     true
 
-Cada máquina (nó) precisa ter seu próprio arquivo de configuração.
+Cada nó precisa ter seu próprio arquivo `.txt`.
 
 ---
 
 ## 🚀 Como Executar
 
-Abra um terminal em cada máquina (ou em diferentes abas do mesmo computador) e execute:
+Abra um terminal por nó (ou abas diferentes) e execute:
 
     python3 ring_network.py arquivo_configuracao.txt porta_local
 
-Exemplo:
+**Exemplo:**
 
-    python3 ring_network.py config_alice.txt 6000
-    python3 ring_network.py config_bob.txt 6001
-    python3 ring_network.py config_charlie.txt 6002
+    python3 ring_network.py config_alice.txt 6001
+    python3 ring_network.py config_bob.txt 6002
+    python3 ring_network.py config_charlie.txt 6000
 
 ---
 
-## 🖥️ Detalhes Técnicos
+## 💻 Detalhes Técnicos
 
 ### Formato dos Pacotes
 
-- Token:  
-`1000`
+- Token:
+1000
 
-- Dados:  
-`2000;origem:destino:status:CRC:mensagem`
+- Dados:
+2000;origem:destino:status:CRC:mensagem
 
-- Status:  
-  - `maquinanaoexiste` (inicialmente)
-  - `ACK` (sem erro)
-  - `NAK` (com erro)
+- Status:
+  - maquinanaoexiste
+  - ACK
+  - NAK
 
 ### Fluxo de Token e Dados
 
-- Um nó só envia dados quando possui o token;
-- Cada mensagem permanece na rede até retornar à origem com ACK, NAK ou `maquinanaoexiste`;
-- Após ACK ou `maquinanaoexiste`, mensagem sai da fila;
-- Após NAK, mensagem permanece na fila para retransmissão (até 3 tentativas).
+- Só envia dados se possuir o token;
+- A mensagem circula até voltar com ACK, NAK ou maquinanaoexiste;
+- ACK ou maquinanaoexiste: mensagem removida;
+- NAK: mensagem permanece para retransmissão (1 vez).
 
 ### Controle de Erros e Retransmissão
 
-- O CRC32 é calculado antes do envio;
-- Recalculado ao chegar no destino:
-  - Correto: responde com ACK;
-  - Erro: responde com NAK;
-- Nó origem trata ACK/NAK conforme acima descrito.
+- CRC32 calculado antes do envio;
+- Recalculado no destino;
+  - CRC correto: ACK
+  - CRC incorreto: NAK
 
 ### Broadcast
 
-- Mensagem enviada com destino `TODOS`;
-- Nós exibem e repassam sem alterar ou responder com ACK/NAK.
+- Destino = TODOS
+- Todos exibem e repassam
+- Sem ACK/NAK
 
 ### Detecção de Token Perdido e Duplicado
 
-- Token perdido (não recebido em 5×tempo_token):  
-  Nó gera um novo token automaticamente.
-- Token duplicado (recebido antes do tempo esperado):  
-  Token duplicado é descartado e exibido alerta no console.
+- Token perdido: novo token gerado após timeout
+- Token duplicado: detectado se token voltar antes do tempo mínimo esperado, token extra é descartado
 
 ---
 
 ## ⌨️ Comandos Disponíveis
 
-Durante execução, você pode enviar mensagens digitando no terminal:
+Durante a execução, digite no terminal:
+
+### Envio de mensagens:
 
     destino mensagem
 
-Exemplos:
+Exemplo:
 
     Bob Olá, Bob!
-    TODOS Esta é uma mensagem broadcast para todos os nós!
+    TODOS Esta é uma mensagem para todos!
+
+### Comandos de depuração e controle:
+
+    /forcartoken       # Força o envio de token manualmente
+    /removertoken      # Simula perda do token
+    /limparfila        # Esvazia a fila de mensagens
+    /mostrafila        # Exibe todas as mensagens na fila
+    /debug             # Mostra status do nó (token, fila, espera...)
+    /duplicartoken     # Envia manualmente um token duplicado
+    /statusanel        # Mostra o que o nó está fazendo
+    /tempo <segundos>  # Altera o tempo de retenção do token em tempo real
 
 ---
 
 ## 📜 Logs e Depuração
 
-O console exibe constantemente logs detalhados sobre:
+Cada nó gera um arquivo `.log` com eventos como:
 
-- Recebimento e envio do token;
-- Transmissão e recepção de pacotes de dados;
-- Resultados de CRC (OK ou erro);
-- Retransmissões (NAK);
-- Detecção de token perdido ou duplicado.
-
-Isso permite acompanhar em tempo real o estado completo da rede.
+- Recebimento/envio de token
+- Envio/recebimento de mensagens
+- Detecção de erro CRC
+- Retransmissões (NAK)
+- Geração ou descarte de token
 
 ---
 
 ## 📌 Licença
 
-Este projeto foi desenvolvido com finalidade acadêmica e não possui restrições específicas quanto à sua utilização ou modificação.
+Projeto acadêmico. Uso livre para fins educacionais.
